@@ -1,0 +1,955 @@
+/* =============================================
+   household.css
+   家計簿機能専用のスタイル
+   グローバルスタイル（index.css）に依存している。
+   ============================================= */
+
+.household-page {
+  max-width: 600px;
+  margin: 0 auto;
+  min-height: calc(100vh - 65px); /* ヘッダー分を引く */
+  position: relative;
+  padding-bottom: 100px; /* FABのための余白 */
+}
+
+/* --- ダッシュボード --- */
+.dashboard {
+  padding: 20px;
+}
+
+/* --- 残高カード --- */
+.balance-card {
+  background: linear-gradient(135deg, var(--surface-color), #242a35);
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.balance-label {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+
+.balance-amount {
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.balance-amount span {
+  font-size: 1.2rem;
+  margin-left: 4px;
+}
+
+/* --- AIメッセージ --- */
+.ai-message {
+  background-color: rgba(5, 213, 139, 0.1);
+  border-left: 4px solid var(--primary-color);
+  padding: 16px;
+  border-radius: 4px 8px 8px 4px;
+  margin-bottom: 24px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+/* --- 収支リスト --- */
+.transaction-list {
+  background-color: var(--surface-color);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.transaction-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.transaction-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+  gap: 8px;
+}
+
+.t-info {
+  flex: 1;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 4px 6px;
+  margin: -4px -6px;
+  transition: background-color 0.15s;
+}
+
+.t-info:hover {
+  background-color: rgba(255,255,255,0.05);
+}
+
+/* 金額 + 削除ボタンをまとめる右側エリア */
+.t-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* 削除ボタン */
+.delete-btn {
+  font-size: 1rem;
+  opacity: 0.4;
+  padding: 4px;
+  border-radius: 6px;
+  transition: opacity 0.15s, background-color 0.15s;
+}
+
+.delete-btn:hover {
+  opacity: 1;
+  background-color: rgba(255, 82, 82, 0.15);
+}
+
+/* ── インライン削除確認UI ── */
+.transaction-confirming {
+  background-color: rgba(255, 82, 82, 0.06);
+}
+
+.delete-confirm {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.delete-confirm-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.delete-confirm-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.delete-confirm-cancel {
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  background-color: var(--bg-color);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  transition: background-color 0.15s;
+}
+
+.delete-confirm-cancel:hover {
+  background-color: #2a3040;
+  color: var(--text-primary);
+}
+
+.delete-confirm-ok {
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background-color: var(--danger-color);
+  color: #fff;
+  transition: opacity 0.15s;
+}
+
+.delete-confirm-ok:hover {
+  opacity: 0.85;
+}
+
+.transaction-item:last-child {
+  border-bottom: none;
+}
+
+.t-info h4 {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.t-date {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.t-amount {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.t-expense { color: var(--text-primary); }
+.t-income  { color: var(--primary-color); }
+
+/* --- フローティングアクションボタン --- */
+.fab {
+  position: fixed;
+  bottom: 24px;
+  right: max(24px, calc((100vw - 600px) / 2 + 24px));
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  background-color: var(--primary-color);
+  color: #121418;
+  font-size: 24px;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(5, 213, 139, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  z-index: 50;
+}
+
+.fab:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(5, 213, 139, 0.6);
+}
+
+/* --- 入力モーダル --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  z-index: 100;
+}
+
+.modal-content {
+  background-color: var(--surface-color);
+  width: 100%;
+  max-width: 600px;
+  max-height: 92vh;           /* 画面高さの92%を上限に */
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+  display: flex;
+  flex-direction: column;      /* ヘッダー固定 + ボディスクロールのため */
+}
+
+/* モーダルのスクロール可能エリア */
+.modal-body {
+  overflow-y: auto;
+  flex: 1;
+  padding: 0 24px 24px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 編集モード時のラベル */
+.modal-edit-label {
+  font-size: 0.8rem;
+  color: var(--primary-color);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.modal-sticky-header {
+  padding: 20px 24px 12px;
+  flex-shrink: 0;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.modal-header .type-toggle {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.close-btn {
+  font-size: 1.5rem;
+  color: var(--text-secondary);
+  transition: color 0.15s;
+}
+.close-btn:hover { color: var(--text-primary); }
+
+/* 支出 / 収入 切り替えボタン */
+.type-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  background-color: var(--bg-color);
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.type-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.type-btn.active-expense {
+  background-color: var(--danger-color);
+  color: #fff;
+}
+
+.type-btn.active-income {
+  background-color: var(--primary-color);
+  color: #121418;
+}
+
+/* フォーム */
+.input-group { margin-bottom: 16px; }
+
+.input-group label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.input-group input,
+.input-group select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.save-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 8px;
+  background-color: var(--primary-color);
+  color: #121418;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 8px;
+  transition: opacity 0.2s;
+}
+
+.save-btn:hover { opacity: 0.9; }
+
+.save-btn-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* =============================================
+   金額ディスプレイ
+   ============================================= */
+.amount-display {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  min-height: 64px;
+}
+
+.amount-currency {
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.amount-value {
+  font-size: 2.4rem;
+  font-weight: 700;
+  letter-spacing: -1px;
+  transition: color 0.2s;
+}
+
+.amount-expense .amount-value { color: var(--text-primary); }
+.amount-income  .amount-value { color: var(--primary-color); }
+
+/* =============================================
+   電卓キーパッド
+   ============================================= */
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.key-btn {
+  padding: 16px;
+  border-radius: 10px;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  font-size: 1.3rem;
+  font-weight: 500;
+  border: 1px solid var(--border-color);
+  transition: background-color 0.12s, transform 0.08s;
+  user-select: none;
+}
+
+.key-btn:hover {
+  background-color: #2a3040;
+}
+
+.key-btn:active {
+  background-color: #353d50;
+  transform: scale(0.95);
+}
+
+.key-backspace {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+/* =============================================
+   カテゴリ選択グリッド
+   ============================================= */
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.category-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 4px;
+  border-radius: 10px;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  transition: background-color 0.15s, border-color 0.15s, transform 0.1s;
+  cursor: pointer;
+}
+
+.category-item:hover {
+  background-color: #2a3040;
+}
+
+.category-item:active {
+  transform: scale(0.94);
+}
+
+.category-active {
+  border-color: var(--primary-color);
+  background-color: rgba(5, 213, 139, 0.1);
+}
+
+.category-emoji {
+  font-size: 1.4rem;
+}
+
+.category-label {
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.2;
+}
+
+.category-active .category-label {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* =============================================
+   ビュー切り替えタブ
+   ============================================= */
+.view-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  background-color: var(--surface-color);
+  border-radius: 12px;
+  padding: 4px;
+}
+
+.view-tab {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.view-tab-active {
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+}
+
+/* =============================================
+   カレンダービュー
+   ============================================= */
+.calendar-view {
+  margin-bottom: 20px;
+}
+
+/* 月切り替えヘッダー */
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.calendar-month-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.month-nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--surface-color);
+  color: var(--text-primary);
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-color);
+  transition: background-color 0.15s;
+}
+
+.month-nav-btn:hover {
+  background-color: #2a3040;
+}
+
+/* 月次サマリー */
+.monthly-summary {
+  display: flex;
+  align-items: center;
+  background-color: var(--surface-color);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  gap: 0;
+}
+
+.summary-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.summary-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.summary-value {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.summary-income  .summary-value { color: var(--primary-color); }
+.summary-expense .summary-value { color: var(--text-primary); }
+.summary-positive { color: var(--primary-color); }
+.summary-negative { color: var(--danger-color); }
+
+.summary-divider {
+  width: 1px;
+  height: 32px;
+  background-color: var(--border-color);
+}
+
+/* カレンダーグリッド */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.weekday-header {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  padding: 6px 0;
+  font-weight: 500;
+}
+
+.weekday-header.sunday   { color: #ff8a80; }
+.weekday-header.saturday { color: #82b1ff; }
+
+/* 日付セル */
+.calendar-cell {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  transition: background-color 0.15s;
+  position: relative;
+}
+
+.calendar-cell.empty {
+  background: transparent;
+  pointer-events: none;
+}
+
+.calendar-cell:not(.empty):hover {
+  background-color: rgba(255,255,255,0.06);
+}
+
+.calendar-cell.sunday   .day-num { color: #ff8a80; }
+.calendar-cell.saturday .day-num { color: #82b1ff; }
+
+.calendar-cell.is-today .day-num {
+  background-color: rgba(255,255,255,0.12);
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.calendar-cell.is-selected {
+  background-color: rgba(5, 213, 139, 0.15);
+  border: 1px solid var(--primary-color);
+}
+
+.calendar-cell.is-selected .day-num {
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+/* 収支ドット */
+.tx-dots {
+  display: flex;
+  gap: 2px;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.dot-expense { background-color: var(--text-secondary); }
+.dot-income  { background-color: var(--primary-color); }
+
+/* 絞り込みラベル */
+.filter-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  padding-left: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.add-this-day-btn {
+  background-color: rgba(5, 213, 139, 0.15);
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.add-this-day-btn:hover {
+  background-color: var(--primary-color);
+  color: #121418;
+}
+
+/* =============================================
+   分析ダッシュボード (AnalyticsView)
+   ============================================= */
+.analytics-view {
+  background-color: var(--surface-color);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.analytics-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 20px;
+  color: var(--text-primary);
+}
+
+.analytics-empty {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 40px 0;
+}
+
+/* 円グラフエリア */
+.chart-container {
+  position: relative;
+  margin-bottom: 32px;
+}
+
+.chart-center-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+.chart-center-title {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.chart-center-amount {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* カスタムツールチップ */
+.analytics-tooltip {
+  background-color: rgba(30, 35, 45, 0.95);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.tooltip-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.tooltip-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* カテゴリランキングリスト */
+.category-ranking {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ranking-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ranking-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ranking-color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.ranking-name {
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.ranking-percentage {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  background-color: rgba(255, 255, 255, 0.08);
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.ranking-amount {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+/* =============================================
+   分析タブ内切り替え
+   ============================================= */
+.analytics-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.analytics-tab {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.analytics-tab.active {
+  background-color: var(--surface-color);
+  color: var(--text-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.overview-summary {
+  display: flex;
+  gap: 16px;
+}
+
+.summary-card {
+  flex: 1;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.summary-card.income-card .summary-amount {
+  color: var(--primary-color);
+}
+
+.summary-card.expense-card .summary-amount {
+  color: #FF4081;
+}
+
+.net-income {
+  margin-top: 24px;
+  padding: 16px;
+  background-color: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.net-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.net-amount {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.net-amount.positive {
+  color: var(--primary-color);
+}
+
+.net-amount.negative {
+  color: #FF4081;
+}
+
+/* =============================================
+   フッターと免責事項モーダル
+   ============================================= */
+.app-footer {
+  text-align: center;
+  padding: 0 20px 40px;
+}
+
+.footer-link {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  text-decoration: underline;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.footer-link:hover {
+  opacity: 1;
+}
+
+.disclaimer-modal {
+  /* 入力モーダルをベースにしつつ、中央配置や高さなど微調整 */
+  margin: auto;
+  border-radius: 20px;
+  max-width: 500px;
+  max-height: 85vh;
+  transform: none;
+  animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes scaleUp {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.disclaimer-section {
+  margin-bottom: 24px;
+}
+
+.disclaimer-section h4 {
+  font-size: 1.05rem;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.disclaimer-section p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
