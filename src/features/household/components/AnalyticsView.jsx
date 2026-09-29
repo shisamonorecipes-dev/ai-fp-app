@@ -29,6 +29,18 @@ const COLORS = {
   'ボーナス': '#F5A623',
 }
 
+// カスタムカテゴリ用に文字列から一意の色を生成する
+const getDynamicColor = (str) => {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  const h = Math.abs(hash) % 360
+  return `hsl(${h}, 80%, 65%)` // ダークモードに映える少し明るめの彩度
+}
+
+const getColor = (name) => COLORS[name] || getDynamicColor(name)
+
 export default function AnalyticsView({ transactions, selectedMonth }) {
   const [activeTab, setActiveTab] = useState('overview') // 'overview' | 'income' | 'expense'
 
@@ -79,7 +91,7 @@ export default function AnalyticsView({ transactions, selectedMonth }) {
         return (
           <div key={item.name} className="ranking-item">
             <div className="ranking-info">
-              <span className="ranking-color-dot" style={{ backgroundColor: COLORS[item.name] || COLORS['その他'] }} />
+              <span className="ranking-color-dot" style={{ backgroundColor: getColor(item.name) }} />
               <span className="ranking-name">{item.name}</span>
               <span className="ranking-percentage">{percentage}%</span>
             </div>
@@ -107,7 +119,7 @@ export default function AnalyticsView({ transactions, selectedMonth }) {
             paddingAngle={2}
           >
             {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[entry.name] || COLORS['その他']} />
+              <Cell key={`cell-${index}`} fill={getColor(entry.name)} />
             ))}
           </Pie>
           <Tooltip content={<CustomTooltip />} />

@@ -7,27 +7,7 @@
 //   defaultDate (string)      — 新規入力時のデフォルト日付 "YYYY-MM-DD"
 
 import { useState, useEffect } from 'react'
-
-const CATEGORIES = {
-  expense: [
-    { label: '食費',       emoji: '🍴' },
-    { label: '日用品',     emoji: '🛒' },
-    { label: '交通費',     emoji: '🚃' },
-    { label: '交際費',     emoji: '🍻' },
-    { label: '娯楽',       emoji: '🎮' },
-    { label: '医療・健康', emoji: '💊' },
-    { label: '衣服・美容', emoji: '👗' },
-    { label: '住居',       emoji: '🏠' },
-    { label: '光熱費',     emoji: '💡' },
-    { label: 'その他',     emoji: '📦' },
-  ],
-  income: [
-    { label: '給与',     emoji: '💰' },
-    { label: '副収入',   emoji: '💼' },
-    { label: 'ボーナス', emoji: '🎁' },
-    { label: 'その他',   emoji: '📦' },
-  ],
-}
+import { useCategories } from '../hooks/useCategories'
 
 const KEYPAD = [
   '7', '8', '9',
@@ -39,15 +19,27 @@ const KEYPAD = [
 export default function InputModal({ isOpen, onClose, onSave, editData, defaultDate }) {
   const isEditMode = !!editData
 
+  const { categories, customCategories, addCategory, editCategory, deleteCategory } = useCategories()
+
   const [type,      setType]      = useState('expense')
   const [category,  setCategory]  = useState('食費')
   const [amountStr, setAmountStr] = useState('')
   const [date,      setDate]      = useState(defaultDate || new Date().toISOString().split('T')[0])
   const [memo,      setMemo]      = useState('')
 
+  // 管理モード用のステート
+  const [isManageMode, setIsManageMode] = useState(false)
+  const [newEmoji, setNewEmoji] = useState('✨')
+  const [newLabel, setNewLabel] = useState('')
+  const [editingTarget, setEditingTarget] = useState(null) // { oldLabel }
+
   // モーダルが開くたびに、editDataの内容でフォームを初期化する
   useEffect(() => {
     if (isOpen) {
+      setIsManageMode(false)
+      setEditingTarget(null)
+      setNewLabel('')
+      
       if (editData) {
         setType(editData.type)
         setCategory(editData.category)
@@ -69,7 +61,9 @@ export default function InputModal({ isOpen, onClose, onSave, editData, defaultD
   // --- 支出 / 収入 切り替え ---
   const handleTypeChange = (newType) => {
     setType(newType)
-    setCategory(CATEGORIES[newType][0].label)
+    setCategory(categories[newType][0].label)
+    setEditingTarget(null)
+    setNewLabel('')
   }
 
   // --- キーパッド入力 ---
@@ -86,21 +80,46 @@ export default function InputModal({ isOpen, onClose, onSave, editData, defaultD
     setAmountStr(prev => prev + key)
   }
 
-  // --- 金額の表示フォーマット ---
   const displayAmount = amountStr
     ? Number(amountStr).toLocaleString('ja-JP')
     : '0'
 
-  // --- 保存処理 ---
   const handleSave = () => {
     const amount = parseInt(amountStr, 10)
     if (!amount || amount <= 0) return
     onSave({ date, type, category, amount, memo })
-    // 新規入力モードのみリセット（編集モードは onClose 側で閉じる）
     if (!isEditMode) {
       setAmountStr('')
       setMemo('')
       setDate(defaultDate || new Date().toISOString().split('T')[0])
+    }
+  }
+
+  // --- 管理モード用ハンドラ ---
+  const handleSaveCategory = () => {
+    if (!newLabel.trim() || !newEmoji.trim()) return
+
+    if (editingTarget) {
+      editCategory(type, editingTarget.oldLabel, newLabel.trim(), newEmoji.trim())
+      if (category === editingTarget.oldLabel) setCategory(newLabel.trim())
+    } else {
+      addCategory(type, newLabel.trim(), newEmoji.trim())
+    }
+    setNewLabel('')
+    setNewEmoji('✨')
+    setEditingTarget(null)
+  }
+
+  const handleEditClick = (c) => {
+    setEditingTarget({ oldLabel: c.label })
+    setNewLabel(c.label)
+    setNewEmoji(c.emoji)
+  }
+
+  const handleDeleteClick = (label) => {
+    if (confirm(`「${label}」を削除してもよろしいですか？\n※過去の記録からは消えません。`)) {
+      deleteCategory(type, label)
+      if (category === label) setCategory(categories[type][0].label)
     }
   }
 
@@ -110,102 +129,153 @@ export default function InputModal({ isOpen, onClose, onSave, editData, defaultD
 
         {/* ── 固定ヘッダー ── */}
         <div className="modal-sticky-header">
-          {isEditMode && (
+          {isEditMode && !isManageMode && (
             <div className="modal-edit-label">記録を編集</div>
+          )}
+          {isManageMode && (
+             <div className="modal-edit-label">カスタムカテゴリ管理</div>
           )}
           <div className="modal-header">
             <div className="type-toggle">
               <button
-                id="toggle-expense"
                 className={`type-btn ${type === 'expense' ? 'active-expense' : ''}`}
                 onClick={() => handleTypeChange('expense')}
               >
                 支出
               </button>
               <button
-                id="toggle-income"
                 className={`type-btn ${type === 'income' ? 'active-income' : ''}`}
                 onClick={() => handleTypeChange('income')}
               >
                 収入
               </button>
             </div>
-            <button id="modal-close-btn" className="close-btn" onClick={onClose}>×</button>
+            <button className="close-btn" onClick={onClose}>×</button>
           </div>
         </div>
 
         {/* ── スクロール可能エリア ── */}
         <div className="modal-body">
+          
+          {isManageMode ? (
+            /* ===== カテゴリ管理モード ===== */
+            <div className="category-manage-mode">
+              <button className="back-btn" onClick={() => setIsManageMode(false)}>← 戻る</button>
+              
+              <div className="manage-form">
+                <h4>{editingTarget ? 'カテゴリを編集' : '新しいカテゴリを追加'}</h4>
+                <div className="manage-inputs">
+                  <input 
+                    type="text" 
+                    className="emoji-input" 
+                    value={newEmoji} 
+                    onChange={e => setNewEmoji(e.target.value)} 
+                    maxLength={2} 
+                    placeholder="絵文字"
+                  />
+                  <input 
+                    type="text" 
+                    className="name-input" 
+                    value={newLabel} 
+                    onChange={e => setNewLabel(e.target.value)} 
+                    placeholder="カテゴリ名"
+                  />
+                  <button className="add-category-btn" onClick={handleSaveCategory}>
+                    {editingTarget ? '更新' : '追加'}
+                  </button>
+                  {editingTarget && (
+                    <button className="cancel-edit-btn" onClick={() => { setEditingTarget(null); setNewLabel(''); }}>キャンセル</button>
+                  )}
+                </div>
+              </div>
 
-          {/* 日付 */}
-          <div className="input-group">
-            <label htmlFor="input-date">日付</label>
-            <input
-              id="input-date"
-              type="date"
-              value={date}
-              onChange={e => setDate(e.target.value)}
-            />
-          </div>
+              <div className="manage-list">
+                <h4>作成済みのカスタムカテゴリ（{type === 'expense' ? '支出' : '収入'}）</h4>
+                {customCategories[type].length === 0 ? (
+                  <p className="empty-text">まだ追加されていません。</p>
+                ) : (
+                  <ul>
+                    {customCategories[type].map(c => (
+                      <li key={c.label}>
+                        <span className="manage-list-label">{c.emoji} {c.label}</span>
+                        <div className="manage-list-actions">
+                          <button onClick={() => handleEditClick(c)}>✏️</button>
+                          <button onClick={() => handleDeleteClick(c.label)}>🗑️</button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          ) : (
+            /* ===== 通常の入力モード ===== */
+            <>
+              <div className="input-group">
+                <label>日付</label>
+                <input
+                  type="date"
+                  value={date}
+                  onChange={e => setDate(e.target.value)}
+                />
+              </div>
 
-          {/* 金額ディスプレイ */}
-          <div className={`amount-display ${type === 'expense' ? 'amount-expense' : 'amount-income'}`}>
-            <span className="amount-currency">¥</span>
-            <span className="amount-value">{displayAmount}</span>
-          </div>
+              <div className={`amount-display ${type === 'expense' ? 'amount-expense' : 'amount-income'}`}>
+                <span className="amount-currency">¥</span>
+                <span className="amount-value">{displayAmount}</span>
+              </div>
 
-          {/* 電卓キーパッド */}
-          <div className="keypad">
-            {KEYPAD.map((key) => (
+              <div className="keypad">
+                {KEYPAD.map((key) => (
+                  <button
+                    key={key}
+                    className={`key-btn ${key === '⌫' ? 'key-backspace' : ''}`}
+                    onClick={() => handleKey(key)}
+                  >
+                    {key}
+                  </button>
+                ))}
+              </div>
+
+              <div className="category-grid">
+                {categories[type].map(({ label, emoji }) => (
+                  <button
+                    key={label}
+                    className={`category-item ${category === label ? 'category-active' : ''}`}
+                    onClick={() => setCategory(label)}
+                  >
+                    <span className="category-emoji">{emoji}</span>
+                    <span className="category-label">{label}</span>
+                  </button>
+                ))}
+                {/* 管理モード切り替えボタン */}
+                <button className="category-item category-manage-btn" onClick={() => setIsManageMode(true)}>
+                  <span className="category-emoji">⚙️</span>
+                  <span className="category-label">追加・管理</span>
+                </button>
+              </div>
+
+              <div className="input-group">
+                <label>メモ（任意）</label>
+                <input
+                  type="text"
+                  value={memo}
+                  onChange={e => setMemo(e.target.value)}
+                  placeholder="例：ランチ、スーパー..."
+                />
+              </div>
+
               <button
-                key={key}
-                id={`keypad-${key === '⌫' ? 'backspace' : key}`}
-                className={`key-btn ${key === '⌫' ? 'key-backspace' : ''}`}
-                onClick={() => handleKey(key)}
+                className={`save-btn ${(!amountStr || amountStr === '0') ? 'save-btn-disabled' : ''}`}
+                onClick={handleSave}
+                disabled={!amountStr || amountStr === '0'}
               >
-                {key}
+                {isEditMode ? '更新する' : '記録する'}
               </button>
-            ))}
-          </div>
+            </>
+          )}
 
-          {/* カテゴリ選択グリッド */}
-          <div className="category-grid">
-            {CATEGORIES[type].map(({ label, emoji }) => (
-              <button
-                key={label}
-                id={`category-${label}`}
-                className={`category-item ${category === label ? 'category-active' : ''}`}
-                onClick={() => setCategory(label)}
-              >
-                <span className="category-emoji">{emoji}</span>
-                <span className="category-label">{label}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* メモ */}
-          <div className="input-group">
-            <label htmlFor="input-memo">メモ（任意）</label>
-            <input
-              id="input-memo"
-              type="text"
-              value={memo}
-              onChange={e => setMemo(e.target.value)}
-              placeholder="例：ランチ、スーパー..."
-            />
-          </div>
-
-          {/* 保存ボタン */}
-          <button
-            id="save-btn"
-            className={`save-btn ${(!amountStr || amountStr === '0') ? 'save-btn-disabled' : ''}`}
-            onClick={handleSave}
-            disabled={!amountStr || amountStr === '0'}
-          >
-            {isEditMode ? '更新する' : '記録する'}
-          </button>
-
-        </div>{/* /modal-body */}
+        </div>
       </div>
     </div>
   )
