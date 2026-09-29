@@ -29,17 +29,13 @@ const COLORS = {
   'ボーナス': '#F5A623',
 }
 
-// カスタムカテゴリ用に文字列から一意の色を生成する
-const getDynamicColor = (str) => {
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash)
-  }
-  const h = Math.abs(hash) % 360
+// カスタムカテゴリ用にインデックスベースで一意の色（Golden Angle）を生成する
+const getDynamicColor = (index) => {
+  const h = Math.round((index * 137.5) % 360)
   return `hsl(${h}, 80%, 65%)` // ダークモードに映える少し明るめの彩度
 }
 
-const getColor = (name) => COLORS[name] || getDynamicColor(name)
+const getColor = (name, index) => COLORS[name] || getDynamicColor(index)
 
 export default function AnalyticsView({ transactions, selectedMonth }) {
   const [activeTab, setActiveTab] = useState('overview') // 'overview' | 'income' | 'expense'
@@ -86,12 +82,12 @@ export default function AnalyticsView({ transactions, selectedMonth }) {
   // カテゴリ別リストの描画関数
   const renderRanking = (data, total) => (
     <div className="category-ranking">
-      {data.map(item => {
+      {data.map((item, index) => {
         const percentage = total > 0 ? Math.round((item.value / total) * 100) : 0
         return (
           <div key={item.name} className="ranking-item">
             <div className="ranking-info">
-              <span className="ranking-color-dot" style={{ backgroundColor: getColor(item.name) }} />
+              <span className="ranking-color-dot" style={{ backgroundColor: getColor(item.name, index) }} />
               <span className="ranking-name">{item.name}</span>
               <span className="ranking-percentage">{percentage}%</span>
             </div>
@@ -104,30 +100,32 @@ export default function AnalyticsView({ transactions, selectedMonth }) {
 
   // 円グラフの描画関数
   const renderPieChart = (data, total, label) => (
-    <div className="chart-container">
-      <ResponsiveContainer width="100%" height={240}>
-        <PieChart>
-          <Pie
-            data={data}
-            dataKey="value"
-            nameKey="name"
-            cx="50%"
-            cy="50%"
-            innerRadius={60}
-            outerRadius={100}
-            stroke="none"
-            paddingAngle={2}
-          >
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={getColor(entry.name)} />
-            ))}
-          </Pie>
-          <Tooltip content={<CustomTooltip />} />
-        </PieChart>
-      </ResponsiveContainer>
-      <div className="chart-center-label">
-        <span className="chart-center-title">{label}</span>
-        <span className="chart-center-amount">¥{formatMoney(total)}</span>
+    <div className="chart-wrapper">
+      <div className="chart-total-header" style={{ textAlign: 'center', marginBottom: '16px' }}>
+        <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>{label}</div>
+        <div style={{ fontSize: '1.4rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>¥{formatMoney(total)}</div>
+      </div>
+      <div className="chart-container">
+        <ResponsiveContainer width="100%" height={240}>
+          <PieChart>
+            <Pie
+              data={data}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              innerRadius={50}
+              outerRadius={100}
+              stroke="none"
+              paddingAngle={2}
+            >
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={getColor(entry.name, index)} />
+              ))}
+            </Pie>
+            <Tooltip content={<CustomTooltip />} />
+          </PieChart>
+        </ResponsiveContainer>
       </div>
     </div>
   )
