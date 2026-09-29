@@ -16,7 +16,7 @@ const KEYPAD = [
   '00','0', '⌫',
 ]
 
-export default function InputModal({ isOpen, onClose, onSave, editData, defaultDate }) {
+export default function InputModal({ isOpen, onClose, onSave, onCategoryChange, editData, defaultDate }) {
   const isEditMode = !!editData
 
   const { categories, customCategories, addCategory, editCategory, deleteCategory } = useCategories()
@@ -100,8 +100,12 @@ export default function InputModal({ isOpen, onClose, onSave, editData, defaultD
     if (!newLabel.trim() || !newEmoji.trim()) return
 
     if (editingTarget) {
-      editCategory(type, editingTarget.oldLabel, newLabel.trim(), newEmoji.trim())
-      if (category === editingTarget.oldLabel) setCategory(newLabel.trim())
+      const newName = newLabel.trim();
+      editCategory(type, editingTarget.oldLabel, newName, newEmoji.trim())
+      if (onCategoryChange) {
+        onCategoryChange(type, editingTarget.oldLabel, newName)
+      }
+      if (category === editingTarget.oldLabel) setCategory(newName)
     } else {
       addCategory(type, newLabel.trim(), newEmoji.trim())
     }
@@ -117,8 +121,11 @@ export default function InputModal({ isOpen, onClose, onSave, editData, defaultD
   }
 
   const handleDeleteClick = (label) => {
-    if (confirm(`「${label}」を削除してもよろしいですか？\n※過去の記録からは消えません。`)) {
+    if (confirm(`「${label}」を削除してもよろしいですか？\n※このカテゴリを使用していた過去の記録は「その他」に変更されます。`)) {
       deleteCategory(type, label)
+      if (onCategoryChange) {
+        onCategoryChange(type, label, 'その他')
+      }
       if (category === label) setCategory(categories[type][0].label)
     }
   }

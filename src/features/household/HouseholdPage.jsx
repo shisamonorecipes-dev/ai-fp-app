@@ -18,7 +18,7 @@ import { generateAIFeedback } from './utils/aiFeedback'
 const getTodayMonth = () => new Date().toISOString().slice(0, 7)
 
 export default function HouseholdPage() {
-  const { transactions, addTransaction, deleteTransaction, updateTransaction } = useTransactions()
+  const { transactions, addTransaction, deleteTransaction, updateTransaction, updateCategoryForTransactions } = useTransactions()
 
   // モーダルの開閉と編集対象の管理
   const [isModalOpen,     setIsModalOpen]     = useState(false)
@@ -201,6 +201,7 @@ export default function HouseholdPage() {
         isOpen={isModalOpen}
         onClose={handleClose}
         onSave={handleSave}
+        onCategoryChange={updateCategoryForTransactions}
         editData={editingTx}
         defaultDate={viewMode === 'calendar' ? selectedDate : null}
       />

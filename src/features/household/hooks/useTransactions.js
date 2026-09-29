@@ -51,5 +51,16 @@ export function useTransactions() {
     )
   }
 
-  return { transactions, addTransaction, deleteTransaction, updateTransaction }
+  // --- 特定のカテゴリ名を一括更新する（カテゴリ名の編集・削除時） ---
+  const updateCategoryForTransactions = (type, oldCategory, newCategory) => {
+    setTransactions(prev =>
+      prev.map(tx => 
+        (tx.type === type && tx.category === oldCategory)
+          ? { ...tx, category: newCategory }
+          : tx
+      )
+    )
+  }
+
+  return { transactions, addTransaction, deleteTransaction, updateTransaction, updateCategoryForTransactions }
 }
