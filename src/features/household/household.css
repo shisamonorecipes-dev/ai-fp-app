@@ -28,10 +28,45 @@
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+.balance-header-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
 .balance-label {
   color: var(--text-secondary);
   font-size: 0.9rem;
-  margin-bottom: 8px;
+}
+
+.help-icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: opacity 0.2s;
+}
+
+.help-icon-btn:hover {
+  opacity: 0.7;
+}
+
+.help-icon {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--text-secondary);
+  color: var(--text-secondary);
+  font-size: 0.6rem;
+  font-weight: bold;
 }
 
 .balance-amount {
@@ -966,6 +1001,26 @@
 }
 
 /* =============================================
+   ヘルプモーダル
+   ============================================= */
+.help-section {
+  margin-bottom: 24px;
+}
+
+.help-section h4 {
+  margin: 0 0 8px 0;
+  font-size: 1rem;
+  color: var(--primary-color);
+}
+
+.help-section p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* =============================================
    カテゴリ管理モード (カスタムカテゴリ追加・編集)
    ============================================= */
 .category-manage-mode {
@@ -998,6 +1053,18 @@
   font-size: 0.95rem;
   color: var(--text-secondary);
   margin-bottom: 12px;
+}
+
+.category-warning-box {
+  background-color: rgba(245, 166, 35, 0.1);
+  border: 1px solid rgba(245, 166, 35, 0.3);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: #f5a623;
+  text-align: left;
 }
 
 .manage-inputs {

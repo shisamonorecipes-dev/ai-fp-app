@@ -197,6 +197,11 @@ export default function InputModal({ isOpen, onClose, onSave, onCategoryChange, 
               
               <div className="manage-form">
                 <h4>{editingTarget ? 'カテゴリを編集' : '新しいカテゴリを追加'}</h4>
+                
+                <div className="category-warning-box">
+                  💡 <strong>注意:</strong> 作成したカテゴリを削除した場合、過去にそのカテゴリで記録したデータはすべて「その他」に振り替えられます。
+                </div>
+
                 <div className="manage-inputs">
                   <input 
                     type="text" 

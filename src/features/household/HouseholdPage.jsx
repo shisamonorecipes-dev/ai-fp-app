@@ -12,6 +12,7 @@ import CalendarView from './components/CalendarView'
 import AnalyticsView from './components/AnalyticsView'
 import InputModal from './components/InputModal'
 import DisclaimerModal from './components/DisclaimerModal'
+import HelpModal from './components/HelpModal'
 import { generateAIFeedback } from './utils/aiFeedback'
 
 // 今日の年月を "YYYY-MM" 形式で取得
@@ -25,8 +26,9 @@ export default function HouseholdPage() {
   const [editingTx,       setEditingTx]       = useState(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
   
-  // 法務免責事項モーダルの状態
+  // 法務免責事項およびヘルプモーダルの状態
   const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false)
+  const [isHelpOpen, setIsHelpOpen] = useState(false)
 
   // タブ（リスト / カレンダー）
   const [viewMode, setViewMode] = useState('list')  // 'list' | 'calendar'
@@ -108,7 +110,7 @@ export default function HouseholdPage() {
   return (
     <div className="household-page">
       <main className="dashboard">
-        <BalanceCard balance={balance} />
+        <BalanceCard balance={balance} onHelpClick={() => setIsHelpOpen(true)} />
 
         {/* 月次切り替えヘッダー */}
         <div className="calendar-header">
@@ -239,6 +241,12 @@ export default function HouseholdPage() {
       <DisclaimerModal 
         isOpen={isDisclaimerOpen}
         onClose={() => setIsDisclaimerOpen(false)}
+      />
+
+      {/* 使い方ヘルプモーダル */}
+      <HelpModal 
+        isOpen={isHelpOpen}
+        onClose={() => setIsHelpOpen(false)}
       />
     </div>
   )
