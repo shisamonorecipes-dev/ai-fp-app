@@ -8,7 +8,7 @@ export default function BalanceCard({ balance }) {
 
   return (
     <section className="balance-card">
-      <div className="balance-label">現在の残高</div>
+      <div className="balance-label">総残高（全期間累計）</div>
       <div className="balance-amount">
         {formatMoney(balance)}<span>円</span>
       </div>
