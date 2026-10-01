@@ -1,12 +1,14 @@
 import { useState, useMemo } from 'react'
 import { calculateEmployee, calculateFreelance } from './utils/taxCalculator'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
+import SimulatorHelpModal from './components/SimulatorHelpModal'
 import './simulator.css'
 
 const formatMoney = (num) => new Intl.NumberFormat('ja-JP').format(num)
 
 export default function CalculatorPage() {
   const [mode, setMode] = useState('employee') // 'employee' or 'freelance'
+  const [isHelpOpen, setIsHelpOpen] = useState(false)
   
   // 共通状態
   const [ageOver40, setAgeOver40] = useState(false)
@@ -43,6 +45,9 @@ export default function CalculatorPage() {
   return (
     <div className="simulator-page">
       <div className="simulator-header">
+        <div className="simulator-help-link" onClick={() => setIsHelpOpen(true)}>
+          ※このシミュレーターの使い方※
+        </div>
         <h2>手取りシミュレーター</h2>
         <p className="subtitle">税金や社会保険料を引いた「本当の収入」を計算します</p>
       </div>
@@ -128,7 +133,7 @@ export default function CalculatorPage() {
           </div>
 
           {mode === 'freelance' && (
-            <p className="disclaimer-text">※国民健康保険料は自治体により異なります。本ツールでは一般的な都市部（東京都）の概算を用いています。</p>
+            <p className="disclaimer-text">※国民健康保険料は自治体により異なります。本ツールでは一般的な都市部の概算を用いています。</p>
           )}
         </div>
 
@@ -191,10 +196,23 @@ export default function CalculatorPage() {
             {mode === 'freelance' && result.businessTax > 0 && (
               <div className="breakdown-item"><span>個人事業税</span><span>-{formatMoney(result.businessTax)} 円</span></div>
             )}
-            
           </div>
+          
+          <details className="assumptions-accordion">
+            <summary>💡 計算の前提条件・ロジックを見る</summary>
+            <div className="assumptions-content">
+              <ul>
+                <li><strong>基礎控除・給与所得控除:</strong> 令和6年度の一般的な控除額を自動適用しています。配偶者・扶養控除以外の個人的な控除（医療費、ふるさと納税等）は考慮していません。</li>
+                <li><strong>健康保険料率:</strong> 会社員は協会けんぽ（東京都）、フリーランスは一般的な都市部（東京都新宿区基準）の料率で概算しています。</li>
+                <li><strong>住民税:</strong> 一律10%の標準税率＋均等割（約5,000円）で概算しています。</li>
+                <li><strong>結果の正確性:</strong> この結果はあくまで目安です。お住まいの自治体や加入組合、実際の申告内容により数千円〜数万円の誤差が生じる場合があります。</li>
+              </ul>
+            </div>
+          </details>
         </div>
       </div>
+      
+      <SimulatorHelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
     </div>
   )
 }
