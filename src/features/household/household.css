@@ -25,51 +25,23 @@
   text-align: center;
   margin-bottom: 24px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+.balance-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.balance-header-row {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
+.app-help-link {
+  font-size: 0.8rem;
+  color: var(--primary-color);
   margin-bottom: 8px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: rgba(5, 213, 139, 0.4);
+  text-underline-offset: 4px;
 }
 
 .balance-label {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-}
-
-.help-icon-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: opacity 0.2s;
-}
-
-.help-icon-btn:hover {
-  opacity: 0.7;
-}
-
-.help-icon {
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  border: 1px solid var(--text-secondary);
-  color: var(--text-secondary);
-  font-size: 0.6rem;
-  font-weight: bold;
-}
-
-.balance-amount {
   font-size: 2.5rem;
   font-weight: 700;
 }
@@ -273,6 +245,36 @@
   animation: slideUp 0.3s ease-out;
   display: flex;
   flex-direction: column;      /* ヘッダー固定 + ボディスクロールのため */
+}
+
+/* --- 中央配置モーダル --- */
+.center-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.center-modal-content {
+  background-color: var(--surface-color);
+  width: 100%;
+  max-width: 500px;
+  max-height: 85vh;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  animation: popIn 0.2s ease-out;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 /* モーダルのスクロール可能エリア */

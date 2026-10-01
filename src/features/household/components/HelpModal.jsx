@@ -4,8 +4,8 @@ export default function HelpModal({ isOpen, onClose }) {
   if (!isOpen) return null
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
+    <div className="center-modal-overlay" onClick={onClose}>
+      <div className="center-modal-content" onClick={e => e.stopPropagation()}>
         <div className="modal-sticky-header">
           <div className="modal-header">
             <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--text-primary)' }}>アプリの使い方</h3>

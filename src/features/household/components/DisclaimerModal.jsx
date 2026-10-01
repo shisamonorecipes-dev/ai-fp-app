@@ -4,8 +4,8 @@ export default function DisclaimerModal({ isOpen, onClose }) {
   if (!isOpen) return null
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content disclaimer-modal" onClick={e => e.stopPropagation()}>
+    <div className="center-modal-overlay" onClick={onClose}>
+      <div className="center-modal-content disclaimer-modal" onClick={e => e.stopPropagation()}>
         
         <div className="modal-sticky-header">
           <div className="modal-header" style={{ marginBottom: 0 }}>
