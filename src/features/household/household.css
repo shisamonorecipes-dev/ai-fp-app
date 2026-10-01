@@ -31,10 +31,11 @@
 .balance-wrapper {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
 }
 
 .app-help-link {
+  align-self: center;
   font-size: 0.8rem;
   color: var(--primary-color);
   margin-bottom: 8px;
