@@ -400,13 +400,13 @@
    ============================================= */
 .keypad {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
   margin-bottom: 20px;
 }
 
 .key-btn {
-  padding: 16px;
+  padding: 14px 0;
   border-radius: 10px;
   background-color: var(--bg-color);
   color: var(--text-primary);
@@ -415,20 +415,32 @@
   border: 1px solid var(--border-color);
   transition: background-color 0.12s, transform 0.08s;
   user-select: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.key-btn:hover {
+.key-btn:hover:not(:disabled) {
   background-color: #2a3040;
 }
 
-.key-btn:active {
+.key-btn:active:not(:disabled) {
   background-color: #353d50;
   transform: scale(0.95);
 }
 
-.key-backspace {
+.key-operator {
+  background-color: #3a455a;
+  color: var(--primary-color);
+  font-size: 1.5rem;
+}
+
+.key-action {
   color: var(--text-secondary);
-  font-size: 1.1rem;
+}
+
+.key-empty {
+  visibility: hidden;
 }
 
 /* =============================================

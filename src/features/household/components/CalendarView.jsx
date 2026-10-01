@@ -17,8 +17,6 @@ export default function CalendarView({
   selectedMonth,
   selectedDate,
   onSelectDate,
-  onPrevMonth,
-  onNextMonth,
 }) {
   const [year, month] = selectedMonth.split('-').map(Number)
 
@@ -46,11 +44,6 @@ export default function CalendarView({
     }
   })
 
-  // --- 当月の収入・支出合計 ---
-  const monthlyTxs = transactions.filter(tx => tx.date.startsWith(selectedMonth))
-  const monthlyIncome  = monthlyTxs.filter(t => t.type === 'income' ).reduce((s, t) => s + t.amount, 0)
-  const monthlyExpense = monthlyTxs.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0)
-
   // --- 日付文字列の生成 ---
   const toDateStr = (dayNum) =>
     `${year}-${String(month).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`
@@ -60,33 +53,6 @@ export default function CalendarView({
 
   return (
     <div className="calendar-view">
-
-      {/* 月次切り替えヘッダー */}
-      <div className="calendar-header">
-        <button className="month-nav-btn" onClick={onPrevMonth} id="prev-month-btn">‹</button>
-        <span className="calendar-month-title">{year}年{month}月</span>
-        <button className="month-nav-btn" onClick={onNextMonth} id="next-month-btn">›</button>
-      </div>
-
-      {/* 月次サマリー */}
-      <div className="monthly-summary">
-        <div className="summary-item summary-income">
-          <span className="summary-label">収入</span>
-          <span className="summary-value">+{formatMoney(monthlyIncome)}</span>
-        </div>
-        <div className="summary-divider" />
-        <div className="summary-item summary-expense">
-          <span className="summary-label">支出</span>
-          <span className="summary-value">-{formatMoney(monthlyExpense)}</span>
-        </div>
-        <div className="summary-divider" />
-        <div className="summary-item">
-          <span className="summary-label">収支</span>
-          <span className={`summary-value ${monthlyIncome - monthlyExpense >= 0 ? 'summary-positive' : 'summary-negative'}`}>
-            {monthlyIncome - monthlyExpense >= 0 ? '+' : ''}{formatMoney(monthlyIncome - monthlyExpense)}
-          </span>
-        </div>
-      </div>
 
       {/* 曜日ヘッダー */}
       <div className="calendar-grid">

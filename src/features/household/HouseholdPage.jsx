@@ -49,17 +49,21 @@ export default function HouseholdPage() {
     setSelectedDate(null)
   }
 
-  // --- 表示するトランザクション（リストモード用） ---
-  // カレンダーで日付が選ばれている → その日のみ、選ばれていない → 全件（降順）
+  // --- 月の情報を計算 ---
+  const [year, month] = selectedMonth.split('-').map(Number)
+  const monthlyTxs = useMemo(() => transactions.filter(tx => tx.date.startsWith(selectedMonth)), [transactions, selectedMonth])
+  const monthlyIncome = useMemo(() => monthlyTxs.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0), [monthlyTxs])
+  const monthlyExpense = useMemo(() => monthlyTxs.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0), [monthlyTxs])
+  const formatMoney = (num) => new Intl.NumberFormat('ja-JP').format(num)
+
+  // --- 表示するトランザクション ---
+  // カレンダーで日付が選ばれている → その日のみ、選ばれていない / リストモード → 当月分全件
   const displayedTransactions = useMemo(() => {
     if (viewMode === 'calendar' && selectedDate) {
       return transactions.filter(tx => tx.date === selectedDate)
     }
-    if (viewMode === 'calendar') {
-      return transactions.filter(tx => tx.date.startsWith(selectedMonth))
-    }
-    return transactions  // リストモードは全件
-  }, [transactions, viewMode, selectedDate, selectedMonth])
+    return monthlyTxs
+  }, [transactions, viewMode, selectedDate, monthlyTxs])
 
   // --- 合計残高（全件）の計算 ---
   const balance = transactions.reduce((acc, tx) => {
@@ -106,6 +110,33 @@ export default function HouseholdPage() {
       <main className="dashboard">
         <BalanceCard balance={balance} />
 
+        {/* 月次切り替えヘッダー */}
+        <div className="calendar-header">
+          <button className="month-nav-btn" onClick={handlePrevMonth} id="prev-month-btn">‹</button>
+          <span className="calendar-month-title">{year}年{month}月</span>
+          <button className="month-nav-btn" onClick={handleNextMonth} id="next-month-btn">›</button>
+        </div>
+
+        {/* 月次サマリー */}
+        <div className="monthly-summary">
+          <div className="summary-item summary-income">
+            <span className="summary-label">収入</span>
+            <span className="summary-value">+{formatMoney(monthlyIncome)}</span>
+          </div>
+          <div className="summary-divider" />
+          <div className="summary-item summary-expense">
+            <span className="summary-label">支出</span>
+            <span className="summary-value">-{formatMoney(monthlyExpense)}</span>
+          </div>
+          <div className="summary-divider" />
+          <div className="summary-item">
+            <span className="summary-label">収支</span>
+            <span className={`summary-value ${monthlyIncome - monthlyExpense >= 0 ? 'summary-positive' : 'summary-negative'}`}>
+              {monthlyIncome - monthlyExpense >= 0 ? '+' : ''}{formatMoney(monthlyIncome - monthlyExpense)}
+            </span>
+          </div>
+        </div>
+
         {/* タブ切り替え */}
         <div className="view-tabs">
           <button
@@ -138,8 +169,6 @@ export default function HouseholdPage() {
             selectedMonth={selectedMonth}
             selectedDate={selectedDate}
             onSelectDate={setSelectedDate}
-            onPrevMonth={handlePrevMonth}
-            onNextMonth={handleNextMonth}
           />
         )}
 

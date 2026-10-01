@@ -10,11 +10,23 @@ import { useState, useEffect } from 'react'
 import { useCategories } from '../hooks/useCategories'
 
 const KEYPAD = [
-  '7', '8', '9',
-  '4', '5', '6',
-  '1', '2', '3',
-  '00','0', '⌫',
+  'C', '⌫', '', '÷',
+  '7', '8', '9', '×',
+  '4', '5', '6', '-',
+  '1', '2', '3', '+',
+  '00', '0', '.', '='
 ]
+
+const evaluateMath = (expr) => {
+  try {
+    const sanitized = expr.replace(/×/g, '*').replace(/÷/g, '/')
+    if (!/^[0-9+\-*/. ]+$/.test(sanitized)) return expr
+    const result = new Function('return ' + sanitized)()
+    return Number.isFinite(result) ? String(Math.floor(result)) : expr
+  } catch {
+    return expr
+  }
+}
 
 export default function InputModal({ isOpen, onClose, onSave, onCategoryChange, editData, defaultDate }) {
   const isEditMode = !!editData
@@ -68,25 +80,39 @@ export default function InputModal({ isOpen, onClose, onSave, onCategoryChange, 
 
   // --- キーパッド入力 ---
   const handleKey = (key) => {
+    if (!key) return
+    if (key === 'C') {
+      setAmountStr('')
+      return
+    }
     if (key === '⌫') {
       setAmountStr(prev => prev.slice(0, -1))
       return
     }
-    if (amountStr === '0' && key !== '00') {
+    if (key === '=') {
+      setAmountStr(prev => evaluateMath(prev))
+      return
+    }
+    // 先頭の0処理などを考慮しつつ、単純に文字列連結する
+    if (amountStr === '0' && key !== '00' && key !== '.' && !['+','-','×','÷'].includes(key)) {
       setAmountStr(key)
       return
     }
-    if (amountStr.length >= 10) return
+    // 長すぎないように制限
+    if (amountStr.length >= 20) return
     setAmountStr(prev => prev + key)
   }
 
-  const displayAmount = amountStr
-    ? Number(amountStr).toLocaleString('ja-JP')
-    : '0'
+  // 表示用：計算結果が分かるようにする
+  // 例: "500+200" → 数式そのまま表示。ただしフォーマットは難しいので生の文字列を出すか、計算可能なら結果を横に出すなど。
+  // 今回は電卓入力中はそのまま文字列表示する。
+  const displayAmount = amountStr || '0'
 
   const handleSave = () => {
-    const amount = parseInt(amountStr, 10)
-    if (!amount || amount <= 0) return
+    const finalAmountStr = evaluateMath(amountStr)
+    const amount = parseInt(finalAmountStr, 10)
+    if (!amount || amount <= 0 || isNaN(amount)) return
+    
     onSave({ date, type, category, amount, memo })
     if (!isEditMode) {
       setAmountStr('')
@@ -233,11 +259,12 @@ export default function InputModal({ isOpen, onClose, onSave, onCategoryChange, 
               </div>
 
               <div className="keypad">
-                {KEYPAD.map((key) => (
+                {KEYPAD.map((key, i) => (
                   <button
-                    key={key}
-                    className={`key-btn ${key === '⌫' ? 'key-backspace' : ''}`}
+                    key={`${key}-${i}`}
+                    className={`key-btn ${['÷','×','-','+','='].includes(key) ? 'key-operator' : ''} ${['C','⌫'].includes(key) ? 'key-action' : ''} ${!key ? 'key-empty' : ''}`}
                     onClick={() => handleKey(key)}
+                    disabled={!key}
                   >
                     {key}
                   </button>
