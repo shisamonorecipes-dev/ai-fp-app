@@ -24,14 +24,21 @@ export default function SimulatorHelpModal({ isOpen, onClose }) {
           <div className="help-section" style={{ marginBottom: '24px' }}>
             <h4 style={{ color: 'var(--primary-color)', marginBottom: '8px' }}>2. 収入と条件を入力する</h4>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.5' }}>
-              額面年収（または売上・経費）、年齢、配偶者や扶養親族の有無を入力します。リアルタイムで手取り額や税金が再計算されます。
+              額面年収や諸条件を入力します。収入の入力には<strong>直感的に動かせるスライダー</strong>をご利用いただけます（スライダーの上限を超える場合は、枠内に直接ご入力ください）。
             </p>
           </div>
 
           <div className="help-section" style={{ marginBottom: '24px' }}>
-            <h4 style={{ color: 'var(--primary-color)', marginBottom: '8px' }}>3. 結果を確認する</h4>
+            <h4 style={{ color: 'var(--primary-color)', marginBottom: '8px' }}>3. 複数のパターンを保存・比較する</h4>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.5' }}>
-              1年間の手取り額と、月換算の目安が表示されます。円グラフで税金や社会保険料の割合を直感的に確認できます。より詳しい計算の前提条件は、結果の下にある「💡 計算の前提条件」から確認できます。
+              結果画面の「⭐ この条件を保存して比較する」ボタンを押すと、現在の結果が画面下部にストックされます。条件を変えて複数ストックすると、自動的に<strong>比較用の棒グラフ</strong>が出現し、「転職」や「独立」といったシナリオごとの手取りの違いを一目で比べることができます。
+            </p>
+          </div>
+
+          <div className="help-section" style={{ marginBottom: '24px' }}>
+            <h4 style={{ color: 'var(--primary-color)', marginBottom: '8px' }}>4. 便利な自動保存機能</h4>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.5' }}>
+              シミュレーターに入力したすべての内容（比較用のストックデータ含む）は、<strong>自動的にブラウザに保存</strong>されます。別の機能タブに移動したり、ブラウザを一度閉じたりしても、次回開いた時にそのまま続きから再開できます。（※一番下のボタンからすべて初期化することも可能です）
             </p>
           </div>
           
