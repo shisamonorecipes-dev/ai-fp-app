@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { calculateEmployee, calculateFreelance } from './utils/taxCalculator'
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts'
 import SimulatorHelpModal from './components/SimulatorHelpModal'
 import './simulator.css'
 
@@ -70,6 +70,9 @@ export default function CalculatorPage() {
   // オプション（控除・詳細設定）
   const [options, setOptions] = useState(defaultOptions)
 
+  // 比較用スナップショット
+  const [snapshots, setSnapshots] = useState([])
+
   // 初期ロード (LocalStorage)
   useEffect(() => {
     const savedData = localStorage.getItem('fp_simulator_data')
@@ -85,6 +88,7 @@ export default function CalculatorPage() {
         if (parsed.expensesStr) setExpensesStr(parsed.expensesStr)
         if (parsed.blueReturn !== undefined) setBlueReturn(parsed.blueReturn)
         if (parsed.options) setOptions(parsed.options)
+        if (parsed.snapshots) setSnapshots(parsed.snapshots)
       } catch (e) {
         console.error('Failed to parse simulator data from localStorage', e)
       }
@@ -97,10 +101,10 @@ export default function CalculatorPage() {
     if (!isLoaded) return
     const dataToSave = {
       mode, ageOver40, hasSpouse, dependents,
-      salaryStr, revenueStr, expensesStr, blueReturn, options
+      salaryStr, revenueStr, expensesStr, blueReturn, options, snapshots
     }
     localStorage.setItem('fp_simulator_data', JSON.stringify(dataToSave))
-  }, [mode, ageOver40, hasSpouse, dependents, salaryStr, revenueStr, expensesStr, blueReturn, options, isLoaded])
+  }, [mode, ageOver40, hasSpouse, dependents, salaryStr, revenueStr, expensesStr, blueReturn, options, snapshots, isLoaded])
 
   const handleOptionChange = (key, value) => {
     setOptions(prev => ({ ...prev, [key]: value }))
@@ -117,6 +121,7 @@ export default function CalculatorPage() {
       setExpensesStr('1000000')
       setBlueReturn(650000)
       setOptions(defaultOptions)
+      setSnapshots([])
     }
   }
 
@@ -138,6 +143,28 @@ export default function CalculatorPage() {
     { name: '税金', value: result.totalTax, color: '#FF4081' },
     { name: '社会保険料', value: result.totalSocialIns, color: '#4A90E2' },
   ]
+
+  // スナップショット保存
+  const handleSaveSnapshot = () => {
+    const isEmployee = mode === 'employee'
+    const incomeLabel = isEmployee ? `${formatMoney(salaryStr / 10000)}万円` : `${formatMoney(revenueStr / 10000)}万円`
+    const defaultName = `比較${snapshots.length + 1} (${isEmployee ? '会社員' : '個人事業主'}・${incomeLabel})`
+    
+    const newSnapshot = {
+      id: Date.now(),
+      name: defaultName,
+      takeHome: Math.max(0, result.takeHome),
+      totalTax: result.totalTax,
+      totalSocialIns: result.totalSocialIns,
+      gross: result.gross,
+      mode: mode
+    }
+    setSnapshots([...snapshots, newSnapshot])
+  }
+  
+  const handleDeleteSnapshot = (id) => {
+    setSnapshots(snapshots.filter(s => s.id !== id))
+  }
 
   if (!isLoaded) return null // マウント時のチラつき防止
 
@@ -341,7 +368,7 @@ export default function CalculatorPage() {
                      <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip 
+                <RechartsTooltip 
                   formatter={(value) => `${formatMoney(value)}円`}
                   contentStyle={{ backgroundColor: '#1E232D', border: 'none', borderRadius: '8px', color: '#fff' }}
                 />
@@ -452,6 +479,16 @@ export default function CalculatorPage() {
             </div>
           </details>
 
+          {/* 比較機能ボタン */}
+          <div style={{ marginTop: '24px', textAlign: 'center' }}>
+            <button 
+              onClick={handleSaveSnapshot}
+              className="save-snapshot-btn"
+            >
+              ⭐ この条件を保存して比較する
+            </button>
+          </div>
+
         </div>
         
         {/* リセットボタン */}
@@ -473,6 +510,52 @@ export default function CalculatorPage() {
         </div>
 
       </div>
+
+      {/* 比較エリア */}
+      {snapshots.length > 0 && (
+        <div className="comparison-section">
+          <h3>📊 シミュレーション比較</h3>
+          
+          {snapshots.length >= 2 ? (
+            <div className="comparison-chart-container">
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={snapshots} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <XAxis dataKey="name" stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} />
+                  <YAxis stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} tickFormatter={(value) => `${value / 10000}万`} />
+                  <RechartsTooltip 
+                    formatter={(value) => `${formatMoney(value)}円`}
+                    contentStyle={{ backgroundColor: '#1E232D', border: 'none', borderRadius: '8px', color: '#fff' }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                  <Bar dataKey="takeHome" name="手取り" stackId="a" fill="#05D58B" />
+                  <Bar dataKey="totalSocialIns" name="社会保険料" stackId="a" fill="#4A90E2" />
+                  <Bar dataKey="totalTax" name="税金" stackId="a" fill="#FF4081" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <p className="comparison-hint">もう1つ条件を保存すると、ここに比較グラフが表示されます。</p>
+          )}
+
+          <div className="snapshots-list">
+            {snapshots.map(snap => (
+              <div key={snap.id} className="snapshot-card">
+                <div className="snapshot-header">
+                  <span className="snapshot-name">{snap.name}</span>
+                  <button onClick={() => handleDeleteSnapshot(snap.id)} className="delete-snapshot-btn">🗑️</button>
+                </div>
+                <div className="snapshot-body">
+                  <div className="snap-takehome">手取り: <strong>{formatMoney(snap.takeHome)}円</strong></div>
+                  <div className="snap-details">
+                    (額面: {formatMoney(snap.gross)}円)
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       
       <SimulatorHelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
     </div>
