@@ -351,19 +351,47 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-/* スライダーの目盛りと注記 */
-.slider-ticks {
+/* スライダーの目盛りと注記（定規風UI） */
+.slider-ruler-container {
+  position: relative;
+  margin-top: -8px; /* スライダーの直下に配置 */
+  padding: 0 10px; /* スライダーのツマミ（幅20px）の中心に合わせるための余白 */
+  height: 35px;
+}
+
+.slider-ruler-ticks {
   display: flex;
   justify-content: space-between;
-  padding: 0 10px;
-  margin-top: -5px;
+  align-items: flex-start;
+  height: 10px;
+}
+
+.slider-ruler-ticks .tick {
+  width: 1px;
+  height: 6px;
+  background-color: var(--border-color);
+}
+
+.slider-ruler-ticks .tick-major {
+  height: 10px;
+  background-color: var(--text-secondary);
+}
+
+.slider-ruler-labels {
+  position: relative;
+  height: 15px;
+  margin-top: 4px;
+}
+
+.slider-ruler-labels span {
+  position: absolute;
   font-size: 0.75rem;
   color: var(--text-secondary);
 }
 
 .slider-note {
   font-size: 0.75rem;
-  color: var(--text-secondary);
-  margin-top: 4px;
+  color: var(--primary-color);
+  margin-top: 10px;
   text-align: right;
 }

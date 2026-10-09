@@ -6,6 +6,36 @@ import './simulator.css'
 
 const formatMoney = (num) => new Intl.NumberFormat('ja-JP').format(num)
 
+const SliderRuler = ({ min, max, tickStep, majorSteps }) => {
+  const range = max - min;
+  const numTicks = Math.floor(range / tickStep);
+  
+  return (
+    <div className="slider-ruler-container">
+      <div className="slider-ruler-ticks">
+        {[...Array(numTicks + 1)].map((_, i) => {
+          const val = min + i * tickStep;
+          const isMajor = majorSteps.includes(val);
+          return <div key={`tick-${i}`} className={`tick ${isMajor ? 'tick-major' : ''}`} />
+        })}
+      </div>
+      <div className="slider-ruler-labels">
+        {majorSteps.map((val) => {
+          const percent = ((val - min) / range) * 100;
+          let transform = 'translateX(-50%)';
+          if (percent === 0) transform = 'translateX(0)';
+          if (percent === 100) transform = 'translateX(-100%)';
+          return (
+            <span key={`label-${val}`} style={{ left: `${percent}%`, transform }}>
+              {val >= 10000 ? `${val / 10000}万` : val}
+            </span>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 const defaultOptions = {
   furusatoNozei: '',
   ideco: '',
@@ -156,11 +186,11 @@ export default function CalculatorPage() {
                   onChange={e => setSalaryStr(e.target.value)}
                   className="custom-range"
                 />
-                <div className="slider-ticks">
-                  <span>100万</span>
-                  <span>1000万</span>
-                  <span>2000万</span>
-                </div>
+                <SliderRuler 
+                  min={1000000} max={20000000} 
+                  tickStep={1000000} 
+                  majorSteps={[1000000, 10000000, 20000000]} 
+                />
                 <div className="slider-note">※スライダー上限は2,000万円です。超える場合は手入力してください。</div>
               </div>
             </div>
@@ -180,11 +210,11 @@ export default function CalculatorPage() {
                     onChange={e => setRevenueStr(e.target.value)}
                     className="custom-range"
                   />
-                  <div className="slider-ticks">
-                    <span>100万</span>
-                    <span>1500万</span>
-                    <span>3000万</span>
-                  </div>
+                  <SliderRuler 
+                    min={1000000} max={30000000} 
+                    tickStep={1000000} 
+                    majorSteps={[1000000, 15000000, 30000000]} 
+                  />
                   <div className="slider-note">※スライダー上限は3,000万円です。超える場合は手入力してください。</div>
                 </div>
               </div>
