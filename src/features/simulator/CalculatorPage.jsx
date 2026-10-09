@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { calculateEmployee, calculateFreelance } from './utils/taxCalculator'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 import SimulatorHelpModal from './components/SimulatorHelpModal'
@@ -6,9 +6,23 @@ import './simulator.css'
 
 const formatMoney = (num) => new Intl.NumberFormat('ja-JP').format(num)
 
+const defaultOptions = {
+  furusatoNozei: '',
+  ideco: '',
+  lifeInsurance: '',
+  medical: '',
+  housingLoan: '',
+  otherDeductions: false,
+  healthInsRate: '',
+  pensionRate: '',
+  empInsRate: '',
+  residentTaxRate: ''
+}
+
 export default function CalculatorPage() {
   const [mode, setMode] = useState('employee') // 'employee' or 'freelance'
   const [isHelpOpen, setIsHelpOpen] = useState(false)
+  const [isLoaded, setIsLoaded] = useState(false)
   
   // 共通状態
   const [ageOver40, setAgeOver40] = useState(false)
@@ -24,21 +38,56 @@ export default function CalculatorPage() {
   const [blueReturn, setBlueReturn] = useState(650000)
 
   // オプション（控除・詳細設定）
-  const [options, setOptions] = useState({
-    furusatoNozei: '',
-    ideco: '',
-    lifeInsurance: '',
-    medical: '',
-    housingLoan: '',
-    otherDeductions: false,
-    healthInsRate: '',
-    pensionRate: '',
-    empInsRate: '',
-    residentTaxRate: ''
-  })
+  const [options, setOptions] = useState(defaultOptions)
+
+  // 初期ロード (LocalStorage)
+  useEffect(() => {
+    const savedData = localStorage.getItem('fp_simulator_data')
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData)
+        if (parsed.mode) setMode(parsed.mode)
+        if (parsed.ageOver40 !== undefined) setAgeOver40(parsed.ageOver40)
+        if (parsed.hasSpouse !== undefined) setHasSpouse(parsed.hasSpouse)
+        if (parsed.dependents !== undefined) setDependents(parsed.dependents)
+        if (parsed.salaryStr) setSalaryStr(parsed.salaryStr)
+        if (parsed.revenueStr) setRevenueStr(parsed.revenueStr)
+        if (parsed.expensesStr) setExpensesStr(parsed.expensesStr)
+        if (parsed.blueReturn !== undefined) setBlueReturn(parsed.blueReturn)
+        if (parsed.options) setOptions(parsed.options)
+      } catch (e) {
+        console.error('Failed to parse simulator data from localStorage', e)
+      }
+    }
+    setIsLoaded(true)
+  }, [])
+
+  // 保存処理 (LocalStorage)
+  useEffect(() => {
+    if (!isLoaded) return
+    const dataToSave = {
+      mode, ageOver40, hasSpouse, dependents,
+      salaryStr, revenueStr, expensesStr, blueReturn, options
+    }
+    localStorage.setItem('fp_simulator_data', JSON.stringify(dataToSave))
+  }, [mode, ageOver40, hasSpouse, dependents, salaryStr, revenueStr, expensesStr, blueReturn, options, isLoaded])
 
   const handleOptionChange = (key, value) => {
     setOptions(prev => ({ ...prev, [key]: value }))
+  }
+
+  const handleReset = () => {
+    if (window.confirm('すべての入力内容と設定を初期化します。よろしいですか？')) {
+      setMode('employee')
+      setAgeOver40(false)
+      setHasSpouse(false)
+      setDependents(0)
+      setSalaryStr('5000000')
+      setRevenueStr('6000000')
+      setExpensesStr('1000000')
+      setBlueReturn(650000)
+      setOptions(defaultOptions)
+    }
   }
 
   // 計算実行
@@ -59,6 +108,8 @@ export default function CalculatorPage() {
     { name: '税金', value: result.totalTax, color: '#FF4081' },
     { name: '社会保険料', value: result.totalSocialIns, color: '#4A90E2' },
   ]
+
+  if (!isLoaded) return null // マウント時のチラつき防止
 
   return (
     <div className="simulator-page">
@@ -105,6 +156,12 @@ export default function CalculatorPage() {
                   onChange={e => setSalaryStr(e.target.value)}
                   className="custom-range"
                 />
+                <div className="slider-ticks">
+                  <span>100万</span>
+                  <span>1000万</span>
+                  <span>2000万</span>
+                </div>
+                <div className="slider-note">※スライダー上限は2,000万円です。超える場合は手入力してください。</div>
               </div>
             </div>
           ) : (
@@ -123,6 +180,12 @@ export default function CalculatorPage() {
                     onChange={e => setRevenueStr(e.target.value)}
                     className="custom-range"
                   />
+                  <div className="slider-ticks">
+                    <span>100万</span>
+                    <span>1500万</span>
+                    <span>3000万</span>
+                  </div>
+                  <div className="slider-note">※スライダー上限は3,000万円です。超える場合は手入力してください。</div>
                 </div>
               </div>
               <div className="form-group">
@@ -133,13 +196,13 @@ export default function CalculatorPage() {
                 </div>
               </div>
               <div className="form-group">
-                <label>青色申告特別控除</label>
-                <select value={blueReturn} onChange={e => setBlueReturn(Number(e.target.value))}>
-                  <option value={650000}>65万円（電子申告等）</option>
-                  <option value={550000}>55万円（紙申告等）</option>
-                  <option value={100000}>10万円</option>
-                  <option value={0}>なし（白色申告）</option>
-                </select>
+                <label>申告方式（青色・白色控除）</label>
+                <div className="radio-group" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '12px' }}>
+                  <label className="checkbox-label"><input type="radio" checked={blueReturn === 650000} onChange={() => setBlueReturn(650000)} /> 青色申告（65万円控除 / 電子申告等）</label>
+                  <label className="checkbox-label"><input type="radio" checked={blueReturn === 550000} onChange={() => setBlueReturn(550000)} /> 青色申告（55万円控除 / 紙申告等）</label>
+                  <label className="checkbox-label"><input type="radio" checked={blueReturn === 100000} onChange={() => setBlueReturn(100000)} /> 青色申告（10万円控除）</label>
+                  <label className="checkbox-label"><input type="radio" checked={blueReturn === 0} onChange={() => setBlueReturn(0)} /> 白色申告（控除なし）</label>
+                </div>
               </div>
             </>
           )}
@@ -360,6 +423,25 @@ export default function CalculatorPage() {
           </details>
 
         </div>
+        
+        {/* リセットボタン */}
+        <div style={{ marginTop: '24px', textAlign: 'center' }}>
+          <button 
+            onClick={handleReset}
+            style={{
+              background: 'transparent',
+              border: '1px solid var(--border-color)',
+              color: 'var(--text-secondary)',
+              padding: '10px 24px',
+              borderRadius: '8px',
+              fontSize: '0.9rem',
+              cursor: 'pointer'
+            }}
+          >
+            入力内容・設定を初期化する
+          </button>
+        </div>
+
       </div>
       
       <SimulatorHelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />

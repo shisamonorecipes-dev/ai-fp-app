@@ -18,7 +18,7 @@ export default function BottomNav() {
         className={`nav-item ${location.pathname === '/simulator' ? 'active' : ''}`}
       >
         <span className="nav-icon">🧮</span>
-        <span className="nav-label">シミュレーション</span>
+        <span className="nav-label">手取り計算</span>
       </Link>
     </div>
   )
