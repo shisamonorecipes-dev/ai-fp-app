@@ -526,6 +526,7 @@ export default function CalculatorPage() {
                   <RechartsTooltip 
                     formatter={(value) => `${formatMoney(value)}円`}
                     contentStyle={{ backgroundColor: '#1E232D', border: 'none', borderRadius: '8px', color: '#fff' }}
+                    cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
                   />
                   <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
                   <Bar dataKey="takeHome" name="手取り" stackId="a" fill="#05D58B" />
